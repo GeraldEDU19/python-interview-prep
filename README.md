@@ -27,41 +27,24 @@ Architecture principles and patterns:
 - **Database Principles** - ACID properties
 - **Architecture Patterns** - Microservices vs Monoliths comparison
 
-### 💻 LeetCode Problems (`leetcode/`)
-Common algorithm problems frequently asked in interviews:
 
-- Two Sum
-- Add Two Numbers
-- Palindrome Number
-- Roman to Integer
-- Longest Common Prefix
+### 💻 LeetCode Problems (`leetcode/`)
+Algorithm exercises and classic interview problems. Check the `leetcode/` folder to see all available problems.
 
 ### 🎯 Interview Examples (`interviews/`)
 Real interview scenarios and technical assessments:
 
 - **Technical Consultant** - JavaScript and Python coding challenges
 - Practical problem-solving examples
-- Different difficulty levels (JS1, Py1, Py2)
+
 
 ## 🚀 Getting Started
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd leetcode
-   ```
-
-2. **Set up virtual environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Explore the content:**
-   - Start with `basic_concepts/` if you're new to Python
-   - Review `software_architecture/` for system design interviews
-   - Practice with `leetcode/` problems for coding interviews
-   - Check `interviews/` for real-world scenarios
+Explore the content:
+- Start with `basic_concepts/` if you're new to Python
+- Review `software_architecture/` for system design interviews
+- Practice with `leetcode/` problems for coding interviews
+- Check `interviews/` for real-world scenarios
 
 ## 📖 How to Use This Repository
 
@@ -88,8 +71,8 @@ Real interview scenarios and technical assessments:
 - Virtual environments and package management
 
 ### **Algorithms & Data Structures**
-- Array manipulation (Two Sum, etc.)
-- String processing (Palindromes, Roman numerals)
+- Array manipulation
+- String processing
 - Linked list operations
 - Number theory problems
 
@@ -122,7 +105,6 @@ Feel free to add more problems, improve existing solutions, or enhance documenta
 
 ## 📚 Additional Resources
 
-- **Python Documentation**: Official Python docs for reference
 - **LeetCode**: Platform for additional algorithm practice
 - **System Design**: Books like "Designing Data-Intensive Applications"
 - **Clean Code**: Robert Martin's principles for maintainable code
