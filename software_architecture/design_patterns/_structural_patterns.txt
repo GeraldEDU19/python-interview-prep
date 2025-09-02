@@ -1,0 +1,346 @@
+=== STRUCTURAL DESIGN PATTERNS ===
+
+DEFINITION:
+Structural patterns deal with object composition, creating relationships between
+objects to form larger structures. They help ensure that when one part changes,
+the entire structure doesn't need to be changed.
+
+PATTERNS COVERED:
+1. **Adapter** - Bridge between incompatible interfaces
+2. **Decorator** - Add functionality dynamically without altering structure
+3. **Facade** - Simplified interface to complex subsystem
+
+=== 1. ADAPTER PATTERN ===
+
+PURPOSE:
+Allows incompatible interfaces to work together. Acts as a bridge between
+two incompatible interfaces.
+
+USE CASES: Third-party library integration, legacy system integration, API wrappers
+
+IMPLEMENTATION:
+```python
+# Existing class with incompatible interface
+class OldPrinter:
+    def old_print(self, text):
+        return f"Old printer: {text}"
+
+# Target interface we want to use
+class ModernPrinter:
+    def print(self, text):
+        pass
+
+# Adapter to make OldPrinter work with ModernPrinter interface
+class PrinterAdapter(ModernPrinter):
+    def __init__(self, old_printer):
+        self.old_printer = old_printer
+    
+    def print(self, text):
+        return self.old_printer.old_print(text)
+
+# Usage
+old_printer = OldPrinter()
+adapter = PrinterAdapter(old_printer)
+print(adapter.print("Hello World"))  # Old printer: Hello World
+```
+
+REAL-WORLD EXAMPLE:
+```python
+# Different payment gateways with different interfaces
+class PayPal:
+    def make_payment(self, amount):
+        return f"Paid ${amount} via PayPal"
+
+class Stripe:
+    def charge(self, amount):
+        return f"Charged ${amount} via Stripe"
+
+# Common interface
+class PaymentAdapter:
+    def __init__(self, payment_gateway, gateway_type):
+        self.gateway = payment_gateway
+        self.type = gateway_type
+    
+    def pay(self, amount):
+        if self.type == "paypal":
+            return self.gateway.make_payment(amount)
+        elif self.type == "stripe":
+            return self.gateway.charge(amount)
+
+# Usage
+paypal = PayPal()
+stripe = Stripe()
+
+paypal_adapter = PaymentAdapter(paypal, "paypal")
+stripe_adapter = PaymentAdapter(stripe, "stripe")
+
+print(paypal_adapter.pay(100))  # Paid $100 via PayPal
+print(stripe_adapter.pay(200))  # Charged $200 via Stripe
+```
+
+=== 2. DECORATOR PATTERN ===
+
+PURPOSE:
+Adds new functionality to objects dynamically without altering their structure.
+Provides a flexible alternative to subclassing for extending functionality.
+
+USE CASES: Adding features to objects, middleware, logging, caching
+
+IMPLEMENTATION:
+```python
+from abc import ABC, abstractmethod
+
+# Base component
+class Coffee(ABC):
+    @abstractmethod
+    def cost(self):
+        pass
+    
+    @abstractmethod
+    def description(self):
+        pass
+
+# Concrete component
+class SimpleCoffee(Coffee):
+    def cost(self):
+        return 2.0
+    
+    def description(self):
+        return "Simple coffee"
+
+# Base decorator
+class CoffeeDecorator(Coffee):
+    def __init__(self, coffee):
+        self._coffee = coffee
+    
+    def cost(self):
+        return self._coffee.cost()
+    
+    def description(self):
+        return self._coffee.description()
+
+# Concrete decorators
+class MilkDecorator(CoffeeDecorator):
+    def cost(self):
+        return self._coffee.cost() + 0.5
+    
+    def description(self):
+        return self._coffee.description() + ", milk"
+
+class SugarDecorator(CoffeeDecorator):
+    def cost(self):
+        return self._coffee.cost() + 0.2
+    
+    def description(self):
+        return self._coffee.description() + ", sugar"
+
+# Usage
+coffee = SimpleCoffee()
+print(f"{coffee.description()}: ${coffee.cost()}")
+
+coffee_with_milk = MilkDecorator(coffee)
+print(f"{coffee_with_milk.description()}: ${coffee_with_milk.cost()}")
+
+coffee_with_milk_and_sugar = SugarDecorator(coffee_with_milk)
+print(f"{coffee_with_milk_and_sugar.description()}: ${coffee_with_milk_and_sugar.cost()}")
+```
+
+PYTHON DECORATOR EXAMPLE:
+```python
+# Function decorators (more Pythonic)
+def log_calls(func):
+    def wrapper(*args, **kwargs):
+        print(f"Calling {func.__name__} with args: {args}")
+        result = func(*args, **kwargs)
+        print(f"Result: {result}")
+        return result
+    return wrapper
+
+def cache_result(func):
+    cache = {}
+    def wrapper(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key in cache:
+            print("Cache hit!")
+            return cache[key]
+        result = func(*args, **kwargs)
+        cache[key] = result
+        return result
+    return wrapper
+
+@log_calls
+@cache_result
+def expensive_calculation(x, y):
+    return x * y + x ** 2
+
+# Usage
+print(expensive_calculation(3, 4))
+print(expensive_calculation(3, 4))  # Cache hit!
+```
+
+=== 3. FACADE PATTERN ===
+
+PURPOSE:
+Provides a simplified interface to a complex subsystem. Hides the complexity
+of the system and provides an easier interface to the client.
+
+USE CASES: API wrappers, complex library interfaces, system integration
+
+IMPLEMENTATION:
+```python
+# Complex subsystem classes
+class CPU:
+    def freeze(self):
+        print("CPU: Freezing processor")
+    
+    def jump(self, position):
+        print(f"CPU: Jumping to position {position}")
+    
+    def execute(self):
+        print("CPU: Executing instructions")
+
+class Memory:
+    def load(self, position, data):
+        print(f"Memory: Loading data '{data}' at position {position}")
+
+class HardDrive:
+    def read(self, lba, size):
+        print(f"HardDrive: Reading {size} bytes from LBA {lba}")
+        return f"Data from sector {lba}"
+
+# Facade class
+class ComputerFacade:
+    def __init__(self):
+        self.cpu = CPU()
+        self.memory = Memory()
+        self.hard_drive = HardDrive()
+    
+    def start(self):
+        print("Starting computer...")
+        self.cpu.freeze()
+        boot_data = self.hard_drive.read(0, 1024)
+        self.memory.load(0, boot_data)
+        self.cpu.jump(0)
+        self.cpu.execute()
+        print("Computer started successfully!")
+
+# Usage
+computer = ComputerFacade()
+computer.start()  # Simple interface hides complexity
+```
+
+REAL-WORLD EXAMPLE:
+```python
+# Complex media conversion subsystem
+class VideoDecoder:
+    def decode(self, filename):
+        print(f"Decoding video: {filename}")
+        return f"Raw video data from {filename}"
+
+class AudioDecoder:
+    def decode(self, filename):
+        print(f"Decoding audio: {filename}")
+        return f"Raw audio data from {filename}"
+
+class VideoEncoder:
+    def encode(self, data, format):
+        print(f"Encoding video to {format}")
+        return f"Encoded video in {format}"
+
+class AudioEncoder:
+    def encode(self, data, format):
+        print(f"Encoding audio to {format}")
+        return f"Encoded audio in {format}"
+
+# Facade for media conversion
+class MediaConverter:
+    def __init__(self):
+        self.video_decoder = VideoDecoder()
+        self.audio_decoder = AudioDecoder()
+        self.video_encoder = VideoEncoder()
+        self.audio_encoder = AudioEncoder()
+    
+    def convert_video(self, input_file, output_format):
+        print(f"Converting {input_file} to {output_format}")
+        
+        # Complex process simplified
+        video_data = self.video_decoder.decode(input_file)
+        audio_data = self.audio_decoder.decode(input_file)
+        
+        encoded_video = self.video_encoder.encode(video_data, output_format)
+        encoded_audio = self.audio_encoder.encode(audio_data, output_format)
+        
+        print(f"Conversion complete: {output_format} file ready")
+        return f"converted_file.{output_format}"
+
+# Usage
+converter = MediaConverter()
+result = converter.convert_video("movie.avi", "mp4")
+```
+
+=== WHEN TO USE EACH PATTERN ===
+
+**ADAPTER:**
+✓ Need to use existing class with incompatible interface
+✓ Integrating third-party libraries
+✓ Working with legacy systems
+❌ Don't overuse - can make code complex
+
+**DECORATOR:**
+✓ Need to add responsibilities to objects dynamically
+✓ Want to add features without subclassing
+✓ Need multiple combinations of features
+❌ Can create many small objects
+
+**FACADE:**
+✓ Want to provide simple interface to complex subsystem
+✓ Need to decouple clients from subsystem components
+✓ Want to layer your subsystems
+❌ Can become a "god object" if not careful
+
+=== ADVANTAGES AND DISADVANTAGES ===
+
+**ADAPTER:**
+✓ Allows incompatible classes to work together
+✓ Separates business logic from interface conversion
+❌ Can make code more complex
+❌ Sometimes direct changes are better
+
+**DECORATOR:**
+✓ More flexible than inheritance
+✓ Can combine multiple decorators
+✓ Single Responsibility Principle
+❌ Can result in many small objects
+❌ Hard to remove specific decorator from stack
+
+**FACADE:**
+✓ Isolates clients from subsystem complexity
+✓ Promotes weak coupling
+✓ Easier to use subsystem
+❌ Can become monolithic
+❌ May limit advanced features
+
+=== COMPARISON ===
+
+**ADAPTER** makes incompatible interfaces work together
+**DECORATOR** adds behavior to objects dynamically
+**FACADE** simplifies complex interfaces
+
+Choose based on your problem:
+- Adapter for interface incompatibility
+- Decorator for adding features flexibly
+- Facade for simplifying complexity
+
+=== CONCLUSION ===
+
+Structural patterns help organize and compose objects:
+
+**ADAPTER** bridges incompatible interfaces
+**DECORATOR** adds functionality dynamically  
+**FACADE** provides simplified access to complex systems
+
+These patterns promote:
+- Loose coupling between components
+- Flexible object composition
+- Simplified client interfaces
+- Better code organization and maintainability

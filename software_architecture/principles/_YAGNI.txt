@@ -1,0 +1,79 @@
+=== YAGNI PRINCIPLE ===
+
+DEFINITION:
+YAGNI stands for "You Aren't Gonna Need It" - don't add functionality until it's
+actually needed. Build for current requirements, not imagined future ones.
+
+=== CORE CONCEPT ===
+
+BUILD ONLY WHAT'S NEEDED NOW:
+- Implement features when actually required
+- Avoid speculative development
+- Add complexity incrementally
+
+=== EXAMPLES ===
+
+BAD (Speculative):
+```python
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        self.phone = None           # Might need later
+        self.preferences = {}       # Could be useful
+        self.login_count = 0        # For analytics maybe
+        
+    def suspend_account(self):      # Not in requirements
+        pass
+```
+
+GOOD (Current needs only):
+```python
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+```
+
+=== BENEFITS ===
+
+✓ Faster development
+✓ Less code to maintain
+✓ Clearer codebase
+✓ Easier to change direction
+
+=== WHEN TO IGNORE YAGNI ===
+
+SECURITY: Always build in security from start
+PROVEN PATTERNS: IDs, timestamps usually needed
+EXPENSIVE TO ADD LATER: Database structure basics
+
+=== GUIDELINES ===
+
+ASK YOURSELF:
+□ Is this in current requirements?
+□ Will we use this next sprint?
+□ Can we add this later easily?
+
+RED FLAGS:
+❌ "We might need this later"
+❌ "It's easy to add now" 
+❌ "Future users will want this"
+
+GREEN LIGHTS:
+✓ Current user story requires this
+✓ Feature used immediately
+✓ Clear, defined requirement
+
+=== COMMON VIOLATIONS ===
+
+❌ Making everything configurable
+❌ Creating abstractions for single use
+❌ Adding "cool" features
+❌ Over-engineering simple problems
+
+=== CONCLUSION ===
+
+**RULE:** Build what you need now, not what you think you might need later.
+
+**GOAL:** Deliver value quickly while keeping options open for the future.

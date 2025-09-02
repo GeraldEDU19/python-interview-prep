@@ -1,0 +1,231 @@
+=== ACID PROPERTIES ===
+
+DEFINITION:
+ACID is an acronym for four key properties that ensure reliable database transactions:
+Atomicity, Consistency, Isolation, and Durability. These properties guarantee that
+database transactions are processed reliably, even in the presence of errors,
+power failures, or other unexpected situations.
+
+Think of ACID like a bank transfer:
+- Atomicity: Either both debit and credit happen, or neither does
+- Consistency: Account balances follow business rules (no negative balances)
+- Isolation: Multiple transfers don't interfere with each other
+- Durability: Once confirmed, the transfer is permanently recorded
+
+=== A - ATOMICITY ===
+
+DEFINITION:
+A transaction is treated as a single, indivisible unit of work. Either all operations
+within the transaction succeed (commit), or none of them do (rollback).
+
+EXAMPLE SCENARIO:
+```sql
+-- Bank transfer: $100 from Account A to Account B
+BEGIN TRANSACTION;
+UPDATE accounts SET balance = balance - 100 WHERE id = 'A';
+UPDATE accounts SET balance = balance + 100 WHERE id = 'B';
+COMMIT;
+```
+
+WITHOUT ATOMICITY (BAD):
+```
+1. Deduct $100 from Account A ✓
+2. System crashes before adding to Account B ✗
+Result: Money disappears! Account A loses $100, Account B gains nothing
+```
+
+WITH ATOMICITY (GOOD):
+```
+1. Deduct $100 from Account A ✓
+2. System crashes before adding to Account B ✗
+Result: Entire transaction is rolled back, both accounts unchanged
+```
+
+WHY IT MATTERS:
+✓ Prevents partial updates that leave data inconsistent
+✓ Ensures data integrity during failures
+✓ Simplifies error handling and recovery
+
+=== C - CONSISTENCY ===
+
+DEFINITION:
+A transaction brings the database from one valid state to another valid state.
+All database constraints, triggers, and business rules must be satisfied
+after the transaction completes.
+
+EXAMPLE:
+```sql
+-- Database constraint
+ALTER TABLE accounts ADD CONSTRAINT positive_balance CHECK (balance >= 0);
+
+-- Without consistency: Account A = -$50 (violates constraint)
+-- With consistency: Transaction fails and rolls back
+```
+
+TYPES OF CONSISTENCY:
+1. **Entity Integrity**: Primary keys must be unique and not null
+2. **Referential Integrity**: Foreign keys must reference valid records
+3. **Business Rules**: Custom constraints (inventory can't go below zero)
+
+PRACTICAL EXAMPLES:
+- Inventory can't go below zero
+- Email addresses must be unique
+- Order total must match sum of line items
+- User age must be realistic (0-150 years)
+
+=== I - ISOLATION ===
+
+DEFINITION:
+Concurrent transactions execute independently without interfering with each other.
+The intermediate state of a transaction is invisible to other transactions.
+
+ISOLATION LEVELS:
+1. **Read Uncommitted**: Allows dirty reads
+2. **Read Committed**: Prevents dirty reads
+3. **Repeatable Read**: Prevents dirty and non-repeatable reads
+4. **Serializable**: Highest isolation, prevents all anomalies
+
+ISOLATION PROBLEMS:
+
+**Dirty Read** (Reading uncommitted data):
+```
+T1: UPDATE accounts SET balance = 400 WHERE id = 'A';
+T2: SELECT balance FROM accounts WHERE id = 'A'; -- Reads 400
+T1: ROLLBACK; -- Transaction 1 fails
+-- T2 read data that never existed!
+```
+
+**Non-Repeatable Read** (Same query, different results):
+```
+T1: SELECT balance FROM accounts WHERE id = 'A'; -- Returns 500
+T2: UPDATE accounts SET balance = 600 WHERE id = 'A'; COMMIT;
+T1: SELECT balance FROM accounts WHERE id = 'A'; -- Returns 600
+-- Same query in T1 returns different values!
+```
+
+=== D - DURABILITY ===
+
+DEFINITION:
+Once a transaction has been committed, its changes are permanently stored and
+will survive system failures, crashes, or power outages.
+
+DURABILITY MECHANISMS:
+- **Write-Ahead Logging (WAL)**: Write transaction log to disk first
+- **Checkpointing**: Periodically flush dirty pages to disk
+- **Backups**: Regular snapshots for disaster recovery
+
+EXAMPLE:
+```sql
+-- E-commerce purchase
+BEGIN TRANSACTION;
+INSERT INTO orders (customer_id, total) VALUES (123, 99.99);
+UPDATE inventory SET quantity = quantity - 1 WHERE product_id = 456;
+COMMIT; -- Changes MUST survive any failure after this point
+```
+
+WITHOUT DURABILITY (BAD):
+```
+1. Customer completes purchase ✓
+2. Payment processed ✓
+3. "Order confirmed" message sent ✓
+4. Server crashes before writing to disk ✗
+5. Customer charged but no order record exists
+```
+
+WITH DURABILITY (GOOD):
+```
+1. Transaction log written to disk first
+2. Customer purchase committed
+3. Even if server crashes immediately after commit
+4. Database recovery restores all committed changes
+5. Customer order is preserved
+```
+
+DURABILITY TECHNIQUES:
+- **Disk Storage**: Data persisted to non-volatile storage
+- **Redundancy**: RAID arrays, database replication
+- **Backups**: Regular snapshots for disaster recovery
+- **Transaction Logs**: Sequential log files for recovery
+
+=== ACID IN DIFFERENT CONTEXTS ===
+
+**TRADITIONAL DATABASES (Strong ACID)**:
+- PostgreSQL, MySQL, Oracle, SQL Server
+- Full ACID compliance
+- Suitable for financial systems, critical applications
+
+**NoSQL DATABASES (Relaxed ACID)**:
+- MongoDB: ACID at document level
+- Cassandra: Eventual consistency
+- Redis: ACID for single operations
+
+**DISTRIBUTED SYSTEMS**:
+- CAP Theorem: Can't have Consistency, Availability, and Partition tolerance
+- BASE: Basically Available, Soft state, Eventual consistency
+
+=== PRACTICAL EXAMPLES ===
+
+**E-COMMERCE ORDER**:
+```sql
+BEGIN TRANSACTION;
+INSERT INTO orders (customer_id, total) VALUES (123, 50.00);
+UPDATE products SET stock = stock - 1 WHERE id = 456;
+-- Atomicity: All operations succeed or all fail
+-- Consistency: Stock can't go negative
+-- Isolation: Other customers can't buy same item simultaneously
+-- Durability: Order persists after commit
+COMMIT;
+```
+
+**BANKING SYSTEM**:
+```python
+def transfer_funds(from_account, to_account, amount):
+    with db.transaction():
+        debit_account(from_account, amount)
+        credit_account(to_account, amount)
+        
+        if get_balance(from_account) < 0:
+            raise InsufficientFundsError()
+```
+
+=== BEST PRACTICES ===
+
+TRANSACTION DESIGN:
+✓ Keep transactions as short as possible
+✓ Don't include user interaction in transactions
+✓ Handle exceptions and rollback appropriately
+✓ Use appropriate isolation levels
+
+PERFORMANCE CONSIDERATIONS:
+✓ Higher isolation levels = lower concurrency
+✓ Durability mechanisms add latency
+✓ Balance ACID compliance with performance needs
+
+=== TESTING ACID PROPERTIES ===
+
+```python
+def test_atomicity():
+    with pytest.raises(SimulatedError):
+        with db.transaction():
+            create_order()
+            simulate_crash()  # Force rollback
+    
+    assert order_count() == 0  # No partial state
+```
+
+=== CONCLUSION ===
+
+ACID properties are fundamental to reliable database systems:
+
+**ATOMICITY** ensures all-or-nothing execution
+**CONSISTENCY** maintains data validity and business rules  
+**ISOLATION** prevents interference between concurrent transactions
+**DURABILITY** guarantees committed changes survive failures
+
+KEY TAKEAWAYS:
+✓ Essential for critical applications (finance, healthcare)
+✓ Trade-offs exist between ACID compliance and performance
+✓ Different systems provide different levels of ACID guarantees
+
+ACID properties provide the foundation for building trustworthy applications
+where data integrity and reliability

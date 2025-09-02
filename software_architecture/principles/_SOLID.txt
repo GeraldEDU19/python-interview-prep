@@ -1,0 +1,237 @@
+=== SOLID PRINCIPLES ===
+
+DEFINITION:
+SOLID is an acronym for five design principles that make software designs more
+understandable, flexible, and maintainable. These principles help create code
+that is easier to extend and modify without breaking existing functionality.
+
+=== S - SINGLE RESPONSIBILITY PRINCIPLE (SRP) ===
+
+DEFINITION:
+A class should have only one reason to change. Each class should have only one job.
+
+BAD EXAMPLE:
+```python
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+    
+    def save_to_database(self):     # Database responsibility
+        pass
+    
+    def send_email(self):           # Email responsibility
+        pass
+    
+    def validate_email(self):       # Validation responsibility
+        pass
+```
+
+GOOD EXAMPLE:
+```python
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+class UserRepository:
+    def save(self, user):
+        pass
+
+class EmailService:
+    def send_email(self, user, message):
+        pass
+```
+
+=== O - OPEN/CLOSED PRINCIPLE (OCP) ===
+
+DEFINITION:
+Open for extension, closed for modification. Add new functionality without changing existing code.
+
+BAD EXAMPLE:
+```python
+class DiscountCalculator:
+    def calculate_discount(self, customer_type, amount):
+        if customer_type == "regular":
+            return amount * 0.05
+        elif customer_type == "premium":
+            return amount * 0.10
+        # Adding new type requires modifying this method
+```
+
+GOOD EXAMPLE:
+```python
+from abc import ABC, abstractmethod
+
+class DiscountStrategy(ABC):
+    @abstractmethod
+    def calculate_discount(self, amount):
+        pass
+
+class RegularCustomerDiscount(DiscountStrategy):
+    def calculate_discount(self, amount):
+        return amount * 0.05
+
+class DiscountCalculator:
+    def __init__(self, strategy: DiscountStrategy):
+        self.strategy = strategy
+    
+    def calculate(self, amount):
+        return self.strategy.calculate_discount(amount)
+```
+
+=== L - LISKOV SUBSTITUTION PRINCIPLE (LSP) ===
+
+DEFINITION:
+Subclasses should be replaceable with their parent classes without breaking the application.
+
+BAD EXAMPLE:
+```python
+class Bird:
+    def fly(self):
+        return "Flying"
+
+class Penguin(Bird):
+    def fly(self):
+        raise Exception("Penguins can't fly!")  # Breaks LSP
+```
+
+GOOD EXAMPLE:
+```python
+from abc import ABC, abstractmethod
+
+class Bird(ABC):
+    @abstractmethod
+    def move(self):
+        pass
+
+class FlyingBird(Bird):
+    def move(self):
+        return "Flying"
+
+class SwimmingBird(Bird):
+    def move(self):
+        return "Swimming"
+
+class Penguin(SwimmingBird):
+    pass
+```
+
+=== I - INTERFACE SEGREGATION PRINCIPLE (ISP) ===
+
+DEFINITION:
+Many specific interfaces are better than one general-purpose interface.
+
+BAD EXAMPLE:
+```python
+class Worker(ABC):
+    @abstractmethod
+    def work(self):
+        pass
+    
+    @abstractmethod
+    def eat(self):
+        pass
+
+class Robot(Worker):
+    def work(self):
+        return "Working"
+    
+    def eat(self):
+        raise Exception("Robots don't eat!")  # Forced to implement
+```
+
+GOOD EXAMPLE:
+```python
+class Workable(ABC):
+    @abstractmethod
+    def work(self):
+        pass
+
+class Eatable(ABC):
+    @abstractmethod
+    def eat(self):
+        pass
+
+class Human(Workable, Eatable):
+    def work(self):
+        return "Working"
+    
+    def eat(self):
+        return "Eating"
+
+class Robot(Workable):
+    def work(self):
+        return "Working efficiently"
+```
+
+=== D - DEPENDENCY INVERSION PRINCIPLE (DIP) ===
+
+DEFINITION:
+High-level modules should depend on abstractions, not concrete implementations.
+
+BAD EXAMPLE:
+```python
+class MySQLDatabase:
+    def save(self, data):
+        return "Saved to MySQL"
+
+class UserService:
+    def __init__(self):
+        self.db = MySQLDatabase()  # Tightly coupled
+```
+
+GOOD EXAMPLE:
+```python
+from abc import ABC, abstractmethod
+
+class Database(ABC):
+    @abstractmethod
+    def save(self, data):
+        pass
+
+class MySQLDatabase(Database):
+    def save(self, data):
+        return "Saved to MySQL"
+
+class UserService:
+    def __init__(self, db: Database):
+        self.db = db  # Depends on abstraction
+```
+
+=== BENEFITS ===
+
+✓ More maintainable code
+✓ Easier to extend with new features
+✓ Better support for testing
+✓ Clearer code organization
+✓ Reduced risk when making changes
+
+=== WHEN TO APPLY ===
+
+□ Does each class have a single responsibility? (SRP)
+□ Can I add features without modifying existing code? (OCP)
+□ Can I substitute subclasses without breaking anything? (LSP)
+□ Are interfaces focused and specific? (ISP)
+□ Do high-level modules depend on abstractions? (DIP)
+
+=== COMMON MISTAKES ===
+
+❌ Creating abstractions for everything (over-engineering)
+❌ Applying all principles everywhere
+❌ Breaking contracts in subclasses
+✓ Apply principles when they add value
+✓ Use judgment - principles are guidelines, not laws
+
+=== CONCLUSION ===
+
+SOLID principles help create maintainable, extensible, and testable code.
+
+KEY TAKEAWAYS:
+- Start simple, refactor when needed
+- Apply principles when they solve real problems
+- Balance flexibility with simplicity
+- Focus on business value, not just technical purity
+
+Good software design is about making future changes easy and safe.
+SOLID principles provide a roadmap for achieving this goal.

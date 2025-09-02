@@ -1,0 +1,259 @@
+=== CREATIONAL DESIGN PATTERNS ===
+
+DEFINITION:
+Creational patterns deal with object creation mechanisms, providing flexibility
+in deciding which objects need to be created for a given use case.
+
+PATTERNS COVERED:
+1. **Singleton** - Single instance with global access
+2. **Factory** - Object creation without specifying exact classes  
+3. **Builder** - Step-by-step construction of complex objects
+
+=== 1. SINGLETON PATTERN ===
+
+PURPOSE:
+Ensures a class has only one instance and provides global access to that instance.
+
+USE CASES: Database connections, configuration managers, logging services
+
+IMPLEMENTATION:
+```python
+class Singleton:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+# Decorator approach (more Pythonic)
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
+class DatabaseConnection:
+    def __init__(self):
+        self.connection = "Connected to database"
+```
+
+EXAMPLE:
+```python
+class ConfigManager:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.config = {}
+        return cls._instance
+    
+    def set(self, key, value):
+        self.config[key] = value
+    
+    def get(self, key):
+        return self.config.get(key)
+
+# Usage
+config1 = ConfigManager()
+config1.set("db_url", "postgresql://localhost")
+config2 = ConfigManager()
+print(config2.get("db_url"))  # Same instance
+```
+
+=== 2. FACTORY PATTERN ===
+
+PURPOSE:
+Creates objects without specifying the exact class to create.
+
+USE CASES: Database connections, payment processors, document parsers
+
+SIMPLE FACTORY:
+```python
+class Animal:
+    def speak(self):
+        pass
+
+class Dog(Animal):
+    def speak(self):
+        return "Woof!"
+
+class Cat(Animal):
+    def speak(self):
+        return "Meow!"
+
+class AnimalFactory:
+    @staticmethod
+    def create(animal_type):
+        if animal_type == "dog":
+            return Dog()
+        elif animal_type == "cat":
+            return Cat()
+        else:
+            raise ValueError(f"Unknown type: {animal_type}")
+
+# Usage
+factory = AnimalFactory()
+dog = factory.create("dog")
+print(dog.speak())  # Woof!
+```
+
+FACTORY METHOD:
+```python
+from abc import ABC, abstractmethod
+
+class PaymentProcessor(ABC):
+    @abstractmethod
+    def process(self, amount):
+        pass
+
+class CreditCardProcessor(PaymentProcessor):
+    def process(self, amount):
+        return f"Processing ${amount} via Credit Card"
+
+class PayPalProcessor(PaymentProcessor):
+    def process(self, amount):
+        return f"Processing ${amount} via PayPal"
+
+class PaymentFactory:
+    @staticmethod
+    def create_processor(payment_type):
+        if payment_type == "credit_card":
+            return CreditCardProcessor()
+        elif payment_type == "paypal":
+            return PayPalProcessor()
+        else:
+            raise ValueError(f"Unknown payment type: {payment_type}")
+
+# Usage
+processor = PaymentFactory.create_processor("credit_card")
+print(processor.process(100))
+```
+
+=== 3. BUILDER PATTERN ===
+
+PURPOSE:
+Constructs complex objects step by step. Allows different representations
+using the same construction code.
+
+USE CASES: Complex configurations, SQL queries, HTTP requests
+
+BASIC BUILDER:
+```python
+class Computer:
+    def __init__(self):
+        self.cpu = None
+        self.memory = None
+        self.storage = None
+    
+    def __str__(self):
+        return f"CPU: {self.cpu}, Memory: {self.memory}, Storage: {self.storage}"
+
+class ComputerBuilder:
+    def __init__(self):
+        self.computer = Computer()
+    
+    def cpu(self, cpu):
+        self.computer.cpu = cpu
+        return self
+    
+    def memory(self, memory):
+        self.computer.memory = memory
+        return self
+    
+    def storage(self, storage):
+        self.computer.storage = storage
+        return self
+    
+    def build(self):
+        return self.computer
+
+# Usage
+computer = (ComputerBuilder()
+            .cpu("Intel i9")
+            .memory("32GB")
+            .storage("1TB SSD")
+            .build())
+print(computer)
+```
+
+QUERY BUILDER EXAMPLE:
+```python
+class SQLQueryBuilder:
+    def __init__(self):
+        self.query_parts = {
+            'select': [],
+            'from': '',
+            'where': [],
+            'order': []
+        }
+    
+    def select(self, fields):
+        self.query_parts['select'] = fields if isinstance(fields, list) else [fields]
+        return self
+    
+    def from_table(self, table):
+        self.query_parts['from'] = table
+        return self
+    
+    def where(self, condition):
+        self.query_parts['where'].append(condition)
+        return self
+    
+    def order_by(self, field):
+        self.query_parts['order'].append(field)
+        return self
+    
+    def build(self):
+        query = f"SELECT {', '.join(self.query_parts['select'])}"
+        query += f" FROM {self.query_parts['from']}"
+        
+        if self.query_parts['where']:
+            query += f" WHERE {' AND '.join(self.query_parts['where'])}"
+        
+        if self.query_parts['order']:
+            query += f" ORDER BY {', '.join(self.query_parts['order'])}"
+        
+        return query
+
+# Usage
+query = (SQLQueryBuilder()
+         .select(['name', 'email'])
+         .from_table('users')
+         .where('age > 18')
+         .order_by('name')
+         .build())
+print(query)  # SELECT name, email FROM users WHERE age > 18 ORDER BY name
+```
+
+=== WHEN TO USE EACH PATTERN ===
+
+**SINGLETON:**
+✓ Need exactly one instance (configs, loggers)
+✓ Global access point required
+❌ Difficult to unit test
+
+**FACTORY:**
+✓ Don't know which class to instantiate beforehand
+✓ Need to delegate object creation
+❌ Can become complex with many types
+
+**BUILDER:**
+✓ Complex objects with many optional parameters
+✓ Need different representations
+❌ Increases code complexity
+
+=== CONCLUSION ===
+
+**SINGLETON** ensures single instance with global access
+**FACTORY** creates objects without specifying exact classes
+**BUILDER** constructs complex objects step by step
+
+Choose based on your needs:
+- Singleton for shared resources
+- Factory for polymorphic creation
+- Builder for complex construction
