@@ -1,0 +1,62 @@
+
+=== UNIT TESTING THEORY FOR LLMs ===
+
+
+Unit testing for Large Language Models (LLMs) presents unique challenges compared to traditional 
+software testing. While classic unit tests check for deterministic outputs given specific inputs, 
+LLMs often generate open-ended, probabilistic, or context-dependent responses. 
+This makes designing effective tests and validation strategies especially important.
+
+---
+
+Why Unit Test LLMs?
+
+1. **Reliability:** Ensures the LLM behaves as expected for critical use cases and edge cases.
+2. **Regression Prevention:** Detects when model updates or prompt changes break existing functionality.
+3. **Quality Assurance:** Helps maintain high standards for user-facing applications powered by LLMs.
+
+---
+
+Key Challenges:
+
+- **Non-determinism:** The same prompt may yield different outputs on different runs.
+- **Open-endedness:** There may be multiple valid answers for a single input.
+- **Evaluation Difficulty:** Assessing correctness can require semantic or fuzzy matching, not just exact string comparison.
+
+---
+
+Best Practices and Strategies:
+
+1. **Golden Set Testing:**
+	- Maintain a set of input prompts and expected (or acceptable) outputs.
+	- Use exact, partial, or semantic matching to validate responses.
+
+2. **Parameterized Testing:**
+	- Test the LLM with variations of prompts to ensure robustness.
+
+3. **Automated Evaluation:**
+	- Use string similarity, keyword checks, or even another LLM to evaluate outputs.
+
+4. **Edge Case Coverage:**
+	- Include ambiguous, adversarial, or rare prompts to test model limits.
+
+5. **Deterministic Settings:**
+	- Where possible, set random seeds or use temperature=0 to reduce output variability during tests.
+
+6. **Human-in-the-Loop:**
+	- For subjective or critical cases, include manual review as part of the test process.
+
+---
+
+Example Test Case Structure:
+
+Prompt: "Summarize the following contract clause: ..."
+Expected Output: Should mention payment terms and deadlines.
+Test Logic: Check if the response contains key phrases like "payment" and "deadline".
+
+---
+
+Summary:
+Unit testing for LLMs is about balancing automation with flexibility. While not all outputs can be 
+checked with strict assertions, a combination of golden sets, semantic checks, and human review 
+can provide strong quality assurance for LLM-powered systems.

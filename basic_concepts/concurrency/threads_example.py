@@ -15,14 +15,6 @@ threads spend time waiting. In our cooking example, each dish is prepared by a s
 import threading
 import time
 
-def cook_task(dish_name, cook_time):
-    """Simulates cooking a specific dish in a separate thread"""
-    thread_name = threading.current_thread().name
-    print(f"[*] Thread {thread_name}: Starting to cook {dish_name}...")
-    time.sleep(cook_time)  # Simulates cooking time (blocks this thread only)
-    print(f"[OK] Thread {thread_name}: {dish_name} is ready!")
-    return dish_name
-
 def cook_with_result(dish_name, cook_time, results, index):
     """Cook task that stores result in shared list"""
     thread_name = threading.current_thread().name
@@ -60,7 +52,14 @@ def main():
     print(f"[TIME] Total time: {end_time - start_time:.2f} seconds")
     print(f"[THREADS] Active threads: {threading.active_count()}")
 
-# Alternative example using ThreadPoolExecutor
+def cook_task(dish_name, cook_time):
+    """Simulates cooking a specific dish in a separate thread"""
+    thread_name = threading.current_thread().name
+    print(f"[*] Thread {thread_name}: Starting to cook {dish_name}...")
+    time.sleep(cook_time)  # Simulates cooking time (blocks this thread only)
+    print(f"[OK] Thread {thread_name}: {dish_name} is ready!")
+    return dish_name
+
 def main_with_executor():
     """Alternative approach using ThreadPoolExecutor"""
     from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -177,5 +176,5 @@ Common Pitfalls:
 - Race conditions: Use locks to protect shared data
 - Deadlocks: Be careful with lock ordering
 - GIL limitation: Threading doesn't help with CPU-bound tasks in Python
-- Resource sharing: Use thread-safe data structures (queue.Queue, etc.)
+- Resource sharing: Use thread-safe data structures
 """

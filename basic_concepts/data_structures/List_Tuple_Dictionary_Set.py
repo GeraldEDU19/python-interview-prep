@@ -1,6 +1,24 @@
 """
 === LIST, TUPLE, DICTIONARY, SET - KEY DIFFERENCES ===
 
+How to create each data structure in Python:
+
+- List: Use square brackets [] or the list() constructor.
+    fruits = ["apple", "banana", "cherry"]
+    numbers = list((1, 2, 3))
+
+- Tuple: Use parentheses () or the tuple() constructor.
+    point = (1, 2)
+    colors = tuple(["red", "green", "blue"])
+
+- Dictionary: Use curly braces {} with key-value pairs, or the dict() constructor.
+    person = {"name": "Alice", "age": 30}
+    empty_dict = dict()
+
+- Set: Use curly braces {} with values, or the set() constructor.
+    unique_numbers = {1, 2, 3}
+    empty_set = set()
+
 These are Python's four fundamental built-in data structures, each optimized for different use cases:
 
 LIST: Mutable, ordered collection that allows duplicates. Think of it as a dynamic array
